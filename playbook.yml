@@ -1,0 +1,40 @@
+---
+- name: Configure Raspberry Pi
+  hosts: pi
+
+  handlers:
+    - name: Restart ssh
+      become: true
+      service:
+        name: ssh
+        state: restarted
+
+  tasks:
+    - name: Disable ssh password authentication
+      become: true
+      copy:
+        src: 0-disable-password-authentication.conf
+        dest: /etc/ssh/sshd_config.d/0-disable-password-authentication.conf
+      notify: Restart ssh
+
+    - name: Install apt packages
+      become: true
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        pkg:
+          - bash-completion
+          - git
+          - tmux
+          - vim
+
+    - name: Download vimrc
+      git:
+        repo: "https://github.com/kyungminkim7/dotfiles.git"
+        dest: "{{ ansible_env.HOME }}/dotfiles"
+
+    - name: Create vimrc symlink
+      file:
+        src: "{{ ansible_env.HOME }}/dotfiles/.vimrc"
+        dest: "{{ ansible_env.HOME }}/.vimrc"
+        state: link
