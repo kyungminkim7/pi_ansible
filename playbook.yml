@@ -9,7 +9,7 @@
         name: ssh
         state: restarted
 
-  tasks:
+  pre_tasks:
     - name: Disable ssh password authentication
       become: true
       copy:
@@ -22,13 +22,14 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
+        state: latest
         pkg:
           - bash-completion
           - git
           - tmux
           - vim
 
-    - name: Download vimrc
+    - name: Download dotfile settings
       git:
         repo: "https://github.com/kyungminkim7/dotfiles.git"
         dest: "{{ ansible_env.HOME }}/dotfiles"
@@ -38,3 +39,12 @@
         src: "{{ ansible_env.HOME }}/dotfiles/.vimrc"
         dest: "{{ ansible_env.HOME }}/.vimrc"
         state: link
+
+    - name: Set .tmux.conf symlink
+      file:
+        src: "{{ ansible_env.HOME }}/dotfiles/.tmux.conf"
+        dest: "{{ ansible_env.HOME }}/.tmux.conf"
+        state: link
+
+  roles:
+    - role: ros2
